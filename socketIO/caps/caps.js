@@ -7,8 +7,12 @@ let caps = io.of('/caps');
 
 // payload basically means "container object" to hold our data
 caps.on('connection', (socket) => {
-
-  socket.on('newOrder', payload => {
+  
+  socket.on('join', room => {
+    socket.join(room);
+  })
+  
+  socket.on('pickup', payload => {
     console.log(('Event:', { 
       event: 'pickup', 
       time: new Date,
@@ -21,7 +25,7 @@ caps.on('connection', (socket) => {
       event: 'in-transit', 
       time: new Date,
       payload }), '\n');
-    caps.emit('inTransit', payload );
+    caps.to(payload.storeName).emit('inTransit', payload );
   });
 
   socket.on('delivered', payload => {
@@ -29,6 +33,6 @@ caps.on('connection', (socket) => {
       event: 'delivered', 
       time: new Date,
       payload }), '\n');
-    caps.emit('delivered', payload );
+    caps.to(payload.storeName).emit('delivered', payload );
   });
 })
