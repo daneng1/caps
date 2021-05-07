@@ -7,14 +7,26 @@ let host = process.env.HOST || 'http://localhost:3000';
 
 const socket = io.connect(`${host}/caps`);
 
-const store = 'FAKER, LLC.';
+const store = 'acme-widgets';
+const store2 =  '1-206-flowers';
 socket.emit('join', store);
+socket.emit('join', store2);
 
 setInterval(() => {
   let newOrder = {
     storeName: store,
-    name: faker.name.findName(),
     orderId: faker.datatype.uuid(),
+    name: faker.name.findName(),
+    address: faker.address.streetAddress()
+  }
+  socket.emit('pickup', newOrder);
+}, 3000);
+
+setInterval(() => {
+  let newOrder = {
+    storeName: store2,
+    orderId: faker.datatype.uuid(),
+    name: faker.name.findName(),
     address: faker.address.streetAddress()
   }
   socket.emit('pickup', newOrder);

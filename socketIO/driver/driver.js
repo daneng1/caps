@@ -9,19 +9,17 @@ const socket = io.connect(`${host}/caps`)
 const store = 'FAKER, LLC.';
 socket.emit('join', store);
 
-socket.on('pickup', payload => {
-  setTimeout(() =>{
+socket.on('pickup', (payload) => {
+  setTimeout(() => {
     console.log('--------','\n',(`Driver: picked up ${payload.orderId}`),'\n', '--------');    
     socket.emit('inTransit', payload);
   }, 2000);
 
+})
+
+socket.on('inTransit', payload => { 
   setTimeout(() => {
     console.log('--------','\n',(`Driver: delivered order# ${payload.orderId}`),'\n','--------');
     socket.emit('delivered', payload);
   }, 2000);
-
 })
-
-socket.on('inTransit', payload => {
-})
-
