@@ -4,20 +4,24 @@ const io = require('socket.io-client');
 require('dotenv').config();
 const host = process.env.HOST || 'http://localhost:3000';
 
-const driver = io.connect(`${host}/caps`)
+const socket = io.connect(`${host}/caps`)
 
+const store = 'FAKER, LLC.';
+socket.emit('join', store);
 
-driver.on('pickup', payload => {
+socket.on('pickup', payload => {
   setTimeout(() =>{
     console.log('--------','\n',(`Driver: picked up ${payload.orderId}`),'\n', '--------');    
-  }, 1000)
-  driver.emit('inTransit', payload);
-})
+    socket.emit('inTransit', payload);
+  }, 2000);
 
-driver.on('inTransit', payload => {
   setTimeout(() => {
     console.log('--------','\n',(`Driver: delivered order# ${payload.orderId}`),'\n','--------');
-  }, 1000)
-  driver.emit('delivered', payload);
+    socket.emit('delivered', payload);
+  }, 2000);
+
+})
+
+socket.on('inTransit', payload => {
 })
 
