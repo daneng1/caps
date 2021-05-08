@@ -4,7 +4,11 @@
 
 ## Howe to use this app
 
-- run  `node caps.js` in the terminal to see the output
+- open four terminal windows and navigate to vendor, server-queue, driver and caps
+- run  `node server-queue.js`to start the server
+- run `node driver.js` to start the driver
+- run `node vendor.js` to start the vendor and kick off orders
+- run `node caps.js` to start Caps delivery service. This one will clear out the server-queue when you start it. It will also clear it out while it is running.
 
 ### User Stories
 
@@ -25,6 +29,10 @@
 > In this phase, we’ll be moving away from using TCP for our event network and switching instead in to using socket.io, which takes on some of the complexity we had to manage ourselves, and also works equally well between servers and with websites.
 
 - The intent here is to build the data services that would drive full dashboard where we can see pickups and deliveries as they happen.
+
+## Phase 3:Message Queue
+
+> In this phase, we’ll be adding a layer of complexity to our application. Rather than just “fire” events and hope that our vendors and drivers respond to them, we’re going to implement a “queue” system so that nothing gets lost. Every event sent will be logged and held onto by the server until the intended recipient acknowledges that they received the message. At any time, a subscriber can get all of the messages they might have missed.
 
 ## Technical Requirements
 
@@ -49,6 +57,14 @@
   - Wait 3 seconds
   - Log “delivered” to the console
   - Emit a ‘delivered’ event with the same payload
+- A Queue Server Hub that
+  - Keeps a log of the delivery, keyed by retailer and event type
+  - Broadcasts “Delivery Confirmations” to retailers
+- Client (Vendor) Applications that retailers would run, which subscribe to the Queue so that they can be alerted when a delivery was made
+  - When a client receives a message, it will need to let the hub server know that it was received
+  - The hub server should then delete the message
+  - Client can ask for all undelivered messages from the server
+  - Each of these would also need to be acknowledged upon receipt
 
 ## Approach & Efficiency
 
@@ -57,3 +73,4 @@
 ---
 
 ![Whiteboard](caps.png)
+![Whiteboard-2](caps-phase3.png)

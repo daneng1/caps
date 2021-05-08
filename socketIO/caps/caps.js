@@ -1,38 +1,43 @@
 'use strict';
 
 require('dotenv').config();
-const host = process.env.PORT || 3000;
-const io = require('socket.io')(host);
-let caps = io.of('/caps');
+const host = process.env.PORT || 'http://localhost:3000';
+const io = require('socket.io-client');
+let socket = io.connect(`${host}/caps`);
 
-// payload basically means "container object" to hold our data
-caps.on('connection', (socket) => {
-  
-  socket.on('join', room => {
-    socket.join(room);
-  })
-  
-  socket.on('pickup', payload => {
-    console.log(('Event:', { 
-      event: 'pickup', 
-      time: new Date,
-      payload }), '\n');
-    caps.emit('pickup', payload );
-  });
+const store = 'acme-widgets';
+const store2 =  '1-206-flowers';
 
-  socket.on('inTransit', payload => {
-    console.log(('Event:', { 
-      event: 'in-transit', 
-      time: new Date,
-      payload }), '\n');
-    caps.to(payload.storeName).emit('inTransit', payload );
-  });
+socket.emit('getAll', store);
+socket.emit('getAll', store2);
 
-  socket.on('delivered', payload => {
-    console.log(('Event:', { 
-      event: 'delivered', 
-      time: new Date,
-      payload }), '\n');
-    caps.to(payload.storeName).emit('delivered', payload );
-  });
+socket.on('pickup', payload => {
+  console.log(('Event:', {
+    event: 'pickup',
+    time: new Date,
+    payload
+  }), '\n');
+
+});
+
+socket.on('inTransit', payload => {
+  console.log(('Event:', {
+    event: 'in-transit',
+    time: new Date,
+    payload
+  }), '\n');
+});
+
+socket.on('delivered', payload => {
+  console.log(('Event:', {
+    event: 'delivered',
+    time: new Date,
+    payload
+  }), '\n');
+  socket.emit('received', payload);
+});
+
+socket.on('message', payload => {
+  console.log(payload);
+  socket.emit('received', payload);
 })
