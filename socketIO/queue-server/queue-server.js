@@ -1,36 +1,59 @@
 'use strict';
 
 require('dotenv').config();
-const host = process.env.PORT || 3333;
+const host = process.env.PORT || 3000;
 const io = require('socket.io')(host);
-const id = require('uuid').v4;
+const uuid = require('uuid').v4;
+
+const server = io.of('/caps');
 
 const queue = {
-  packages: {}
+  'acme-widgets': {},
+  '1-206-flowers': {}
 }
 
-const vendor = io.of('/caps');
-
-vendor.on('connection', socket => {
-
+server.on('connection', socket => {
+  console.log('connected', socket.id);
+  // socket.on('join', room => {
+  //   console.log('room name:', room);
+  //   socket.join(room);
+  // })
   socket.on('pickup', payload => {
+    let store = payload.storeName;
+    let id = uuid();
+    queue[store][id] = payload;
+    console.log('current queue:', {id, payload});
+    server.emit('pickup', {id, payload});
+  })
 
-    queue.packages[id] = payload;
-    console.log('current queue', queue);
+  socket.on('received', payload => {
+    let store = payload.storeName;
+    let id = id();
+    console.log('current queue', queue[store][id]);
+    // delete queue[store][orderID];
 
-    // socket.emit('added'); // register the ability to "added" something with .on, which then disconnects the client so that they can add another chore
-    // vendor.emit('chore', { id, payload }); // this will broadcast to everyone in the family namespace that a new chore was added and it's chore details are: id, payload
   });
 
-  // let the child see the list of their chores in the queue
-  socket.on('getAll', () => {
-    Object.keys(queue.packages).forEach(id => {
-      console.log( { id, payload: queue.chores[id] });
+  socket.on('getAll', payload => {
+    // const store = payload.storeName;
+    console.log(payload);
+    Object.keys(queue[payload]).forEach((id) => {
+      // console.log({ payload:queue[payload][id] });
+      socket.emit('message', { payload: queue[payload][id]});
     })
-  });
+  })
 
-  // once a child has completed the chore, delete it from the queue
-  socket.on('delivered', message => {
-    delete queue.packages[message.id];
+  socket.on('delivered', payload => {
+    let store = payload.storeName;
+    let orderID = payload.orderID;
+    queue[store][orderID] = { payload };
+    socket.emit('delivered', payload);
   });
 })
+
+
+// '3fd65bf6-75b0-4468-8576-cdd28fd855b9': {
+//   storeName: '1-206-flowers',
+//   orderId: '1514a877-3d86-46a4-8dbd-13b1497697be',
+//   name: 'Clara Daniel',
+//   address: '941 Simonis Station'

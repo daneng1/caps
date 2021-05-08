@@ -9,8 +9,9 @@ const socket = io.connect(`${host}/caps`);
 
 const store = 'acme-widgets';
 const store2 =  '1-206-flowers';
-socket.emit('join', store);
-socket.emit('join', store2);
+
+socket.emit('getAll', store);
+socket.emit('getAll', store2);
 
 setInterval(() => {
   let newOrder = {
@@ -20,6 +21,7 @@ setInterval(() => {
     address: faker.address.streetAddress()
   }
   socket.emit('pickup', newOrder);
+  console.log('connected');
 }, 3000);
 
 setInterval(() => {
@@ -32,6 +34,16 @@ setInterval(() => {
   socket.emit('pickup', newOrder);
 }, 3000);
 
+socket.on('message', msg => {
+  console.log('messages working');
+  socket.emit('received', msg.payload);
+})
+
 socket.on('delivered', payload => {
   console.log((`THANK YOU for delivering order# ${payload.orderId}`), '\n','--------');
+
+})
+
+socket.on('delivered', payload => {
+  socket.emit('received', payload);
 })
