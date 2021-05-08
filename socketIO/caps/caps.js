@@ -5,12 +5,11 @@ const host = process.env.PORT || 'http://localhost:3000';
 const io = require('socket.io-client');
 let socket = io.connect(`${host}/caps`);
 
-// payload basically means "container object" to hold our data
+const store = 'acme-widgets';
+const store2 =  '1-206-flowers';
 
-// socket.on('join', room => {
-//   socket.join(room);
-//   console.log('room name:', room);
-// })
+socket.emit('getAll', store);
+socket.emit('getAll', store2);
 
 socket.on('pickup', payload => {
   console.log(('Event:', {
@@ -18,7 +17,7 @@ socket.on('pickup', payload => {
     time: new Date,
     payload
   }), '\n');
-  // socket.emit('pickup', payload);
+
 });
 
 socket.on('inTransit', payload => {
@@ -27,7 +26,6 @@ socket.on('inTransit', payload => {
     time: new Date,
     payload
   }), '\n');
-  // socket.to(payload.storeName).emit('inTransit', payload);
 });
 
 socket.on('delivered', payload => {
@@ -36,6 +34,10 @@ socket.on('delivered', payload => {
     time: new Date,
     payload
   }), '\n');
-  // socket.to(payload.storeName).emit('delivered', payload);
+  socket.emit('received', payload);
 });
 
+socket.on('message', payload => {
+  console.log(payload);
+  socket.emit('received', payload);
+})
